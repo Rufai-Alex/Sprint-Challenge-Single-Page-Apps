@@ -1,44 +1,50 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import CharacterCard from "./CharacterCard";
+import SearchForm from "./SearchForm";
+import Styled from "styled-components";
 
 function CharacterList() {
   // TODO: Add useState to track data from useEffect
-  const [characters, setCharacters] = useState([]);
+  const [character, setCharacter] = useState([]);
+  const [filterCharacter, setFilterCharacter] = useState([]);
+  const [matchCharacter, setMatchCharacter] = useState();
 
   useEffect(() => {
-    const getCharacters = () => {
-      // TODO: Add API Request here - must run in `useEffect`
-      //  Important: verify the 2nd `useEffect` parameter: the dependancies array!
+    // TODO: Add API Request here - must run in `useEffect`
+    //  Important: verify the 2nd `useEffect` parameter: the dependancies array!
 
-      axios
-        .get("https://rickandmortyapi.com/api/character/")
-        .then(response => {
-          setCharacters(response.data.results);
-          console.log(response);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    };
-    getCharacters();
+    axios
+      .get("https://rickandmortyapi.com/api/character/")
+      .then(response => {
+        setCharacter(response.data.results);
+        setFilterCharacter(response.data.results);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }, []);
-  console.log(characters);
-
+  useEffect(() => {
+    search(matchCharacter);
+  }, [matchCharacter]);
+  function changeHandler(event) {
+    setMatchCharacter(event.target.value);
+  }
+  function search(matchCharacter) {
+    const result = character.filter(card =>
+      card.name.toLowerCase().includes(matchCharacter.toLowerCase())
+    );
+    setFilterCharacter(result);
+  }
   return (
     <section className='character-list'>
-      <div>
-        {characters.map(character => {
-          return (
-            <div key={character.id}>
-              <img scr={character.image} />
-              <h2>Name :{character.name}</h2>
-              <p> Status :{character.status} </p>
-              <p>Species :{character.species}</p>
-              const names = {character.name}
-            </div>
-          );
+      <SearchForm changeHandler={changeHandler} />
+      <h2>
+        {filterCharacter.map(card => {
+          return <CharacterCard key={card.id} data={card} />;
         })}
-      </div>
+      </h2>
     </section>
   );
 }
